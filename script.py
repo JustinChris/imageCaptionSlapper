@@ -1,13 +1,23 @@
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
+import argparse
+import os
+from datetime import datetime
 
 fnt = ImageFont.truetype("arial.ttf", 30)
-editedImageName = "edit.png"
-imagePath = "sample.png"
-text = "me looking for fish"
 
-def editImage (imagePath, text):
+def arg_parser():
+    parser = argparse.ArgumentParser(
+        prog="Image Caption Slapper",
+        description="Image Caption Slapper is a python script used to put caption on a image with viral funny video style",
+    )
+    parser.add_argument("--path", "-p", help="image path", required=True)
+    parser.add_argument("--text", "-t", help="text to put in the image", required=True)
+    parser.add_argument("--out", "-o", help="output file name")
+    return parser.parse_args()
+
+def editImage (imagePath, text, outputName):
     editImage = Image.open(imagePath)
     editImage = editImage.convert('RGBA')
     drawer = ImageDraw.Draw(editImage)
@@ -28,7 +38,27 @@ def editImage (imagePath, text):
     imgDrawer = ImageDraw.Draw(img)
 
     imgDrawer.text(targetSize, text, font=fnt, fill=(255, 255, 255, 255), align="center")
+    if not outputName:
+        filename, ext = outputFileName(imagePath)
+        output = filename + getcurrentdate() + "." + ext
+        img.save(output)
+    else:
+        img.save(outputName)
 
-    img.save(editedImageName)
+def outputFileName(path):
+    head, tail = os.path.split(path)
+    name = tail.split(".")[0]
+    ext = tail.split(".")[1]
+    return name, ext
 
-editImage(imagePath, text)
+def getcurrentdate():
+    now = datetime.now()
+    date = str(now.year) + str(now.month) + str(now.day) + "-" + str(now.hour) + str(now.minute) + str(now.second) + str(now.microsecond)
+    return date
+
+def main():
+    args = arg_parser()
+
+    editImage(args.path, args.text, args.out)
+
+main()
